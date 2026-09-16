@@ -102,20 +102,8 @@
         "use strict";
 
         const CONFIG = {
-            BOT_USERNAMES: [
-                "eonxstBot",
-                "eonxfstBot",
-                "",
-                "",
-                ""
-            ],
-            URL_PARAMS: [
-                "Neostart",
-                "Neostart2",
-                "",
-                "",
-                ""
-            ],
+            BOT_USERNAMES: ["eonxstBot", "eonxfstBot", "", "", ""],
+            URL_PARAMS: ["Neostart", "Neostart2", "", "", ""],
             COUNTDOWN_SECONDS: 3,
             API_BASE: "https://wee-dot-yedhuku2004-543d97f6.koyeb.app"
         };
@@ -238,37 +226,38 @@
                 .then(r => r.json())
                 .then(d => {
                     if (d.status === 'OK') {
-                        // Verification enabled → normal flow with shortener
-                        showGateway('ok', null);
+                        // Verification ENABLED → normal flow with shortener
+                        showGateway('enabled', null, hexToken, shortenerUrl);
                     }
-                    else if (d.status === 'DISABLED' && d.bot_link) {
-                        // Verification disabled → verify, then go STRAIGHT to bot
-                        showGateway('disabled', d.bot_link);
+                    else if (d.status === 'DISABLED' && d.bot_username && d.file_token) {
+                        // Verification DISABLED → build bot link, skip shortener
+                        const botUrl = `https://t.me/${d.bot_username}?start=${encodeURIComponent(d.file_token)}`;
+                        showGateway('disabled', botUrl, hexToken, shortenerUrl);
                     }
                     else {
                         showBypass(d.reason);
                     }
                 })
-                .catch(() => showGateway('ok', null));
+                .catch(() => showGateway('enabled', null, hexToken, shortenerUrl));
 
-            // mode = 'ok' (shortener) | 'disabled' (bot link)
-            function showGateway(mode, botLink) {
+            // mode = 'enabled' (shortener) | 'disabled' (bot link)
+            function showGateway(mode, botUrl, hex, shortener) {
                 card.classList.remove('bypass-theme');
                 dynamicDiv.innerHTML = `
                     <h1>Security Gateway</h1>
                     <p class="subtitle">Verification required to establish a secure tunnel. Automated scripts are restricted.</p>
                     <button class="btn-primary btn-cyan" id="verifyBtn"><i class="fas fa-fingerprint"></i> Verify Identity</button>
                 `;
-                document.getElementById('verifyBtn').onclick = () => startVerification(mode, botLink);
+                document.getElementById('verifyBtn').onclick = () => startVerification(mode, botUrl, hex, shortener);
             }
 
-            function startVerification(mode, botLink) {
-                fetch(`${apiBase}/api/mark_gateway_opened?token=${hexToken}`).catch(() => {});
+            function startVerification(mode, botUrl, hex, shortener) {
+                fetch(`${apiBase}/api/mark_gateway_opened?token=${hex}`).catch(() => {});
                 dynamicDiv.innerHTML = `
                     <h1>Verifying</h1>
                     <div class="terminal-box">
                         <div class="line" style="animation-delay:0s">> Authenticating secure session...</div>
-                        <div class="line" style="animation-delay:0.3s">> Establishing connection to ${hexToken}...</div>
+                        <div class="line" style="animation-delay:0.3s">> Establishing connection to ${hex}...</div>
                         <div class="line" style="animation-delay:0.6s">> Running integrity checks...</div>
                     </div>
                     <div class="status-indicator"><span class="spinner"></span><span>Verifying... <span id="countdown">${CONFIG.COUNTDOWN_SECONDS}</span></span></div>
@@ -277,24 +266,24 @@
                 const el = document.getElementById('countdown');
                 const iv = setInterval(() => {
                     counter--; if (el) el.textContent = counter;
-                    if (counter <= 0) { clearInterval(iv); showProceed(mode, botLink); }
+                    if (counter <= 0) { clearInterval(iv); showProceed(mode, botUrl, hex, shortener); }
                 }, 1000);
             }
 
-            function showProceed(mode, botLink) {
+            function showProceed(mode, botUrl, hex, shortener) {
                 dynamicDiv.innerHTML = `
                     <h1>Access Verified</h1>
                     <p class="subtitle">Your identity has been confirmed. Click proceed to continue.</p>
                     <button class="btn-primary btn-cyan" id="proceedBtn"><i class="fas fa-arrow-right"></i> Proceed</button>
                 `;
                 document.getElementById('proceedBtn').onclick = () => {
-                    if (mode === 'disabled' && botLink) {
-                        // Verification disabled → skip shortener, go straight to bot
-                        window.location.href = botLink;
+                    if (mode === 'disabled' && botUrl) {
+                        // Verification disabled → go STRAIGHT to bot, skip shortener
+                        window.location.href = botUrl;
                     } else {
-                        // Normal flow → mark redirect, then send to shortener
-                        fetch(`${apiBase}/api/mark_shortener_redirect?token=${hexToken}`).catch(() => {});
-                        window.location.href = shortenerUrl;
+                        // Normal flow → shortener
+                        fetch(`${apiBase}/api/mark_shortener_redirect?token=${hex}`).catch(() => {});
+                        window.location.href = shortener;
                     }
                 };
             }
