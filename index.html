@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Security Gateway</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }
+        body { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:1.5rem; position:relative; overflow:hidden; background-color:#050b14; }
+        #particle-canvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:-2; pointer-events:none; }
+        body::after { content:""; position:fixed; inset:0; background:rgba(0,0,0,0.30); z-index:-1; }
+        .card { max-width:700px; width:100%; background:transparent!important; border:none!important; box-shadow:none!important; padding:0!important; text-align:center; position:relative; z-index:1; }
+        h1, .subtitle, .countdown-label, #countdown, .permanent-badge, .footer-note, .error-message p, .error-message h3 { text-shadow: 0 2px 10px rgba(0,0,0,0.7), 0 0 20px rgba(0,0,0,0.5); }
+        .logo { display:flex; align-items:center; justify-content:center; gap:0.5rem; margin-bottom:1.8rem; }
+        .logo i { font-size:2.8rem; color:#e50914; filter: drop-shadow(0 0 15px rgba(0,0,0,0.8)); }
+        .logo span { font-size:2.2rem; font-weight:700; letter-spacing:-0.5px; background:linear-gradient(135deg,#fff,#a0a8c0); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-shadow:0 2px 10px rgba(0,0,0,0.7); }
+        h1 { font-size:2rem; font-weight:600; color:#f0f4ff; margin-bottom:0.8rem; }
+        .subtitle { font-size:1.1rem; color:#9ca3c0; margin-bottom:2.2rem; line-height:1.5; }
+        .countdown-panel { background:transparent!important; border-radius:0; padding:0.5rem 0 1rem; margin:1rem 0; border-left:none; }
+        .countdown-label { font-size:1rem; text-transform:uppercase; letter-spacing:1.5px; color:#a0a8c0; margin-bottom:0.75rem; }
+        #countdown { font-size:4.5rem; font-weight:800; color:#00ffff; text-shadow:0 0 30px rgba(0,255,255,0.9),0 0 60px rgba(0,0,0,0.8); line-height:1; margin-bottom:0.5rem; }
+        .btn-primary { display:inline-flex; align-items:center; justify-content:center; gap:0.75rem; background:#e50914; color:white; font-size:1.3rem; font-weight:600; padding:1rem 2.2rem; border-radius:60px; text-decoration:none; margin:1.8rem 0 0.8rem; border:none; cursor:pointer; transition:background 0.2s,transform 0.1s; box-shadow:0 8px 20px rgba(229,9,20,0.3); }
+        .btn-primary:hover { background:#f82a34; transform:scale(1.02); }
+        .btn-primary:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+        .btn-cyan { background:#00ffff; color:#000; box-shadow:0 8px 20px rgba(0,255,255,0.3); }
+        .btn-cyan:hover { background:#33ffff; }
+        .permanent-badge { background:transparent!important; border-radius:0; padding:0.5rem 0; font-size:0.9rem; color:#b0b8d0; border:none; margin:1rem 0 0.2rem; text-shadow:0 1px 8px rgba(0,0,0,0.8); }
+        .footer-note { font-size:0.85rem; color:#7f87a5; margin-top:1.5rem; text-shadow:0 1px 5px rgba(0,0,0,0.7); }
+        .error-message { color:#f1a9a9; background:transparent!important; border-radius:1rem; padding:1rem; border:1px solid rgba(229,9,20,0.3); backdrop-filter:blur(2px); text-shadow:none; }
+        .error-message h3 { color:#fff; margin-bottom:0.5rem; }
+        .error-message p { color:#ddd; }
+        .matched-bot { color:#8af; font-size:0.9rem; margin-top:0.3rem; text-shadow:0 1px 10px rgba(0,0,0,0.9); }
+        .matched-bot i { margin-right:6px; }
+        .terminal-box { background: rgba(0,20,30,0.85); border: 1px solid #00ffff; border-radius: 8px; padding: 1.2rem; margin: 1.5rem 0; text-align: left; font-family: 'Courier New', monospace; font-size: 0.9rem; color: #00ffff; line-height: 1.6; box-shadow: 0 0 20px rgba(0,255,255,0.15); }
+        .terminal-box .line { opacity:0; animation:fadeIn 0.5s forwards; }
+        @keyframes fadeIn { to { opacity:1; } }
+        .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(0,255,255,0.3); border-radius: 50%; border-top-color: #00ffff; animation: spin 0.8s linear infinite; margin-right: 8px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .status-indicator { display: flex; align-items: center; justify-content: center; gap: 10px; color: #00ffff; font-size: 1rem; margin: 1rem 0; }
+        .bypass-theme h1 { color:#ff4444; text-shadow:0 0 30px rgba(255,0,0,0.8); }
+        .bypass-theme .terminal-box { border-color:#ff4444; color:#ff8888; background:rgba(30,0,0,0.85); box-shadow:0 0 20px rgba(255,0,0,0.15); }
+        .bypass-theme .btn-primary { background:#ff4444; box-shadow:0 8px 20px rgba(255,68,68,0.3); }
+        .bypass-theme .btn-primary:hover { background:#ff6666; }
+        #debug-console { background:rgba(0,0,0,0.8); color:#0f0; font-family:monospace; font-size:12px; text-align:left; padding:10px; border-radius:8px; margin-top:20px; max-height:200px; overflow:auto; display:none; border:1px solid #0f0; }
+    </style>
+</head>
+<body>
+
+    <canvas id="particle-canvas"></canvas>
+
+    <div class="card" id="card">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i>
+            <span id="logo-text">SECURITY GATEWAY</span>
+        </div>
+
+        <div id="dynamic-content"></div>
+
+        <div id="debug-console"></div>
+    </div>
+
+    <script>
+    (function() {
+        const canvas = document.getElementById('particle-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resize();
+        window.addEventListener('resize', resize);
+        const particles = [];
+        for (let i = 0; i < 70; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 2 + 1,
+                speedX: (Math.random() - 0.5) * 0.6,
+                speedY: (Math.random() - 0.5) * 0.6,
+                alpha: Math.random() * 0.7 + 0.3
+            });
+        }
+        (function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.x += p.speedX; p.y += p.speedY;
+                if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 210, 255, ${p.alpha})`;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#00ffff';
+                ctx.fill();
+            });
+            requestAnimationFrame(animate);
+        })();
+    })();
+    </script>
+
+    <script>
+    (function() {
+        "use strict";
+
+        const CONFIG = {
+            BOT_USERNAMES: [
+                "eonxstBot",
+                "eonxfstBot",
+                "",
+                "",
+                ""
+            ],
+            URL_PARAMS: [
+                "Neostart",
+                "Neostart2",
+                "",
+                "",
+                ""
+            ],
+            COUNTDOWN_SECONDS: 3,
+            API_BASE: "https://wee-dot-yedhuku2004-543d97f6.koyeb.app"
+        };
+
+        const DEBUG = window.location.hash === '#debug';
+        function log(...args) {
+            if (DEBUG) {
+                console.log('[GW]', ...args);
+                const d = document.getElementById('debug-console');
+                if (d) { d.style.display = 'block'; d.innerHTML += '<div>' + args.map(String).join(' ') + '</div>'; }
+            }
+        }
+
+        const dynamicDiv = document.getElementById('dynamic-content');
+        const card = document.getElementById('card');
+        const logoText = document.getElementById('logo-text');
+
+        function setLogo(txt) { if (logoText) logoText.textContent = txt; }
+        function base64UrlDecode(s) {
+            s = s.replace(/-/g, '+').replace(/_/g, '/');
+            while (s.length % 4) s += '=';
+            return atob(s);
+        }
+
+        const path = window.location.pathname;
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // ═════ ROUTE: /access/{hex}?url=... ═════
+        if (path.startsWith('/access/')) {
+            const hexToken = path.split('/')[2] || '';
+            const encodedUrl = urlParams.get('url');
+            if (!hexToken || !encodedUrl) { showInvalid(); return; }
+            let shortenerUrl;
+            try { shortenerUrl = base64UrlDecode(encodedUrl); } catch(e) { showInvalid(); return; }
+            if (!shortenerUrl.startsWith('http')) { showInvalid(); return; }
+            routeAccess(hexToken, shortenerUrl);
+            return;
+        }
+
+        // ═════ ROUTE: /s?h=...&a=...&b=... ═════
+        if (path === '/s' || path.startsWith('/s/') || path.startsWith('/s?')) {
+            const h = urlParams.get('h');
+            const a = urlParams.get('a');
+            const b = urlParams.get('b') || (CONFIG.BOT_USERNAMES[0] || 'eonxstBot');
+            if (!h || !a) { showInvalid(); return; }
+            routeGranted(h, a, b);
+            return;
+        }
+
+        // ═════ ROUTE: / (legacy multi-bot mapping) ═════
+        routeLegacy();
+        return;
+
+        function routeLegacy() {
+            const mapping = {};
+            const usernames = CONFIG.BOT_USERNAMES || [];
+            const params = CONFIG.URL_PARAMS || [];
+            const maxLen = Math.max(usernames.length, params.length);
+            let validCount = 0;
+
+            for (let i = 0; i < maxLen; i++) {
+                const bot = (usernames[i] || '').trim();
+                const param = (params[i] || '').trim();
+                if (bot && param) { mapping[param] = bot; validCount++; }
+            }
+
+            if (validCount === 0) {
+                dynamicDiv.innerHTML = `<div class="error-message"><h3>⚠️ No bot mappings configured</h3><p>Please define at least one BOT_USERNAME / URL_PARAM pair.</p></div>`;
+                return;
+            }
+
+            let matchedParam = null, matchedBot = null;
+            for (const [param, bot] of Object.entries(mapping)) {
+                if (urlParams.has(param)) { matchedParam = param; matchedBot = bot; break; }
+            }
+
+            if (!matchedParam || !matchedBot) {
+                const available = Object.keys(mapping).join(', ');
+                dynamicDiv.innerHTML = `
+                    <div class="error-message">
+                        <h3>❌ Invalid or missing link</h3>
+                        <p>The URL does not contain a recognised file reference.</p>
+                        <p style="font-size:0.8rem; opacity:0.7; margin-top:0.5rem;">Expected one of: ?${available}</p>
+                        <p style="font-size:0.8rem; opacity:0.5; margin-top:0.2rem;">(you passed: ${window.location.search || 'none'})</p>
+                    </div>`;
+                return;
+            }
+
+            setLogo('ADULT FLIX');
+            const startValue = urlParams.get(matchedParam);
+            const telegramUrl = `https://t.me/${matchedBot}?start=${encodeURIComponent(startValue)}`;
+
+            dynamicDiv.innerHTML = `
+                <h1>Your secure link is active</h1>
+                <div class="subtitle"><i class="fas fa-shield-alt" style="margin-right:6px;color:#4eac6d;"></i>Permanent • Private • Instant</div>
+                <div class="countdown-panel">
+                    <div class="countdown-label">⏳ redirecting in</div>
+                    <div id="countdown">${CONFIG.COUNTDOWN_SECONDS}</div>
+                    <div class="matched-bot"><i class="fas fa-robot"></i> → @${matchedBot}</div>
+                    <p style="color:#a4aec6;margin-top:0.5rem;text-shadow:0 1px 8px rgba(0,0,0,0.7);">click the button if nothing happens</p>
+                </div>
+                <a href="${telegramUrl}" class="btn-primary"><i class="fab fa-telegram-plane"></i> Open in Telegram</a>
+                <div class="permanent-badge"><i class="fas fa-infinity"></i> Permanent link – works even if bot is replaced</div>
+                <div class="footer-note">Powered by <strong>Vercel</strong> &amp; <strong>Telegram</strong></div>
+            `;
+
+            let counter = CONFIG.COUNTDOWN_SECONDS;
+            const countdownEl = document.getElementById('countdown');
+            const iv = setInterval(() => {
+                counter--; if (countdownEl) countdownEl.textContent = counter;
+                if (counter <= 0) { clearInterval(iv); window.location.href = telegramUrl; }
+            }, 1000);
+        }
+
+        function routeAccess(hexToken, shortenerUrl) {
+            setLogo('SECURITY GATEWAY');
+            const apiBase = CONFIG.API_BASE.replace(/\/+$/, '');
+
+            fetch(`${apiBase}/api/verify_token?token=${hexToken}`)
+                .then(r => r.json())
+                .then(d => {
+                    if (d.status === 'OK') showGateway();
+                    else showBypass(d.reason);
+                })
+                .catch(() => showGateway());
+
+            function showGateway() {
+                card.classList.remove('bypass-theme');
+                dynamicDiv.innerHTML = `
+                    <h1>Security Gateway</h1>
+                    <p class="subtitle">Verification required to establish a secure tunnel. Automated scripts are restricted.</p>
+                    <button class="btn-primary btn-cyan" id="verifyBtn"><i class="fas fa-fingerprint"></i> Verify Identity</button>
+                `;
+                document.getElementById('verifyBtn').onclick = startVerification;
+            }
+
+            function startVerification() {
+                fetch(`${apiBase}/api/mark_gateway_opened?token=${hexToken}`).catch(() => {});
+                dynamicDiv.innerHTML = `
+                    <h1>Verifying</h1>
+                    <div class="terminal-box">
+                        <div class="line" style="animation-delay:0s">> Authenticating secure session...</div>
+                        <div class="line" style="animation-delay:0.3s">> Establishing connection to ${hexToken}...</div>
+                        <div class="line" style="animation-delay:0.6s">> Running integrity checks...</div>
+                    </div>
+                    <div class="status-indicator"><span class="spinner"></span><span>Verifying... <span id="countdown">${CONFIG.COUNTDOWN_SECONDS}</span></span></div>
+                `;
+                let counter = CONFIG.COUNTDOWN_SECONDS;
+                const el = document.getElementById('countdown');
+                const iv = setInterval(() => {
+                    counter--; if (el) el.textContent = counter;
+                    if (counter <= 0) { clearInterval(iv); showProceed(); }
+                }, 1000);
+            }
+
+            function showProceed() {
+                dynamicDiv.innerHTML = `
+                    <h1>Access Verified</h1>
+                    <p class="subtitle">Your identity has been confirmed. Click proceed to continue.</p>
+                    <button class="btn-primary btn-cyan" id="proceedBtn"><i class="fas fa-arrow-right"></i> Proceed</button>
+                `;
+                document.getElementById('proceedBtn').onclick = () => {
+                    fetch(`${apiBase}/api/mark_shortener_redirect?token=${hexToken}`).catch(() => {});
+                    window.location.href = shortenerUrl;
+                };
+            }
+
+            function showBypass(reason) {
+                card.classList.add('bypass-theme');
+                dynamicDiv.innerHTML = `
+                    <h1>🤡 BYPASS DETECTED</h1>
+                    <p class="subtitle">We've detected an invalid or automated link bypass attempt.</p>
+                    <div class="terminal-box">
+                        <div class="line">> Security Violation</div>
+                        <div class="line">> ${reason || 'Session expired or direct bypass tool detected.'}</div>
+                        <div class="line">> External bypass bots are strictly blocked.</div>
+                        <div class="line">> Please solve the link manually in a genuine browser.</div>
+                    </div>
+                    <button class="btn-primary" onclick="window.location.href='https://t.me/${CONFIG.BOT_USERNAMES[0]}'"><i class="fab fa-telegram-plane"></i> Click here [TG]</button>
+                `;
+            }
+        }
+
+        function routeGranted(hex, access, botUsername) {
+            setLogo('ACCESS GRANTED');
+            card.classList.remove('bypass-theme');
+            dynamicDiv.innerHTML = `
+                <h1>Access Granted</h1>
+                <p class="subtitle">Redirecting to Telegram...</p>
+                <div class="terminal-box">
+                    <div class="line">> Authenticating secure session...</div>
+                    <div class="line">> Establishing connection to ${botUsername}...</div>
+                    <div class="line">> Access granted. Redirecting...</div>
+                </div>
+                <div class="status-indicator"><span class="spinner"></span><span>Finalizing...</span></div>
+            `;
+            setTimeout(() => {
+                window.location.href = `https://t.me/${botUsername}?start=${hex}_${access}`;
+            }, 1500);
+        }
+
+        function showInvalid() {
+            setLogo('SECURITY GATEWAY');
+            dynamicDiv.innerHTML = `<div class="error-message"><h3>❌ Invalid or missing link</h3><p>The URL does not contain a recognised file reference.</p></div>`;
+        }
+    })();
+    </script>
+
+</body>
+</html>
