@@ -237,8 +237,23 @@
             fetch(`${apiBase}/api/verify_token?token=${hexToken}`)
                 .then(r => r.json())
                 .then(d => {
-                    if (d.status === 'OK') showGateway();
-                    else showBypass(d.reason);
+                    if (d.status === 'OK') {
+                        showGateway();
+                    }
+                    else if (d.status === 'DISABLED' && d.bot_username && d.file_token) {
+                        // ── Verification disabled → skip straight to bot ──
+                        setLogo('REDIRECTING');
+                        dynamicDiv.innerHTML = `
+                            <h1>Redirecting…</h1>
+                            <p class="subtitle">Verification is disabled. Sending you to Telegram…</p>
+                            <div class="status-indicator"><span class="spinner"></span><span>Opening bot…</span></div>
+                        `;
+                        const botUrl = `https://t.me/${d.bot_username}?start=${encodeURIComponent(d.file_token)}`;
+                        setTimeout(() => { window.location.href = botUrl; }, 800);
+                    }
+                    else {
+                        showBypass(d.reason);
+                    }
                 })
                 .catch(() => showGateway());
 
