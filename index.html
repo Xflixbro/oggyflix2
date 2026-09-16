@@ -225,13 +225,13 @@
             fetch(`${apiBase}/api/verify_token?token=${hexToken}`)
                 .then(r => r.json())
                 .then(d => {
+                    log('API response:', JSON.stringify(d));
                     if (d.status === 'OK') {
-                        // Verification ENABLED → normal flow with shortener
                         showGateway('enabled', null, hexToken, shortenerUrl);
                     }
                     else if (d.status === 'DISABLED' && d.bot_username && d.file_token) {
-                        // Verification DISABLED → build bot link, skip shortener
                         const botUrl = `https://t.me/${d.bot_username}?start=${encodeURIComponent(d.file_token)}`;
+                        log('Bot URL:', botUrl);
                         showGateway('disabled', botUrl, hexToken, shortenerUrl);
                     }
                     else {
@@ -240,7 +240,6 @@
                 })
                 .catch(() => showGateway('enabled', null, hexToken, shortenerUrl));
 
-            // mode = 'enabled' (shortener) | 'disabled' (bot link)
             function showGateway(mode, botUrl, hex, shortener) {
                 card.classList.remove('bypass-theme');
                 dynamicDiv.innerHTML = `
@@ -278,10 +277,10 @@
                 `;
                 document.getElementById('proceedBtn').onclick = () => {
                     if (mode === 'disabled' && botUrl) {
-                        // Verification disabled → go STRAIGHT to bot, skip shortener
+                        log('Skipping shortener → going to bot');
                         window.location.href = botUrl;
                     } else {
-                        // Normal flow → shortener
+                        log('Normal flow → shortener');
                         fetch(`${apiBase}/api/mark_shortener_redirect?token=${hex}`).catch(() => {});
                         window.location.href = shortener;
                     }
