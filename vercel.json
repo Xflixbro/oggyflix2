@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/access/:token", "destination": "/index.html" },
+    { "source": "/s", "destination": "/index.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
