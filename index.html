@@ -238,36 +238,31 @@
                 .then(r => r.json())
                 .then(d => {
                     if (d.status === 'OK') {
-                        showGateway();
+                        // Verification enabled → normal flow with shortener
+                        showGateway('ok', null);
                     }
-                    else if (d.status === 'DISABLED' && d.bot_username && d.file_token) {
-                        // ── Verification disabled → skip straight to bot ──
-                        setLogo('REDIRECTING');
-                        dynamicDiv.innerHTML = `
-                            <h1>Redirecting…</h1>
-                            <p class="subtitle">Verification is disabled. Sending you to Telegram…</p>
-                            <div class="status-indicator"><span class="spinner"></span><span>Opening bot…</span></div>
-                        `;
-                        const botUrl = `https://t.me/${d.bot_username}?start=${encodeURIComponent(d.file_token)}`;
-                        setTimeout(() => { window.location.href = botUrl; }, 800);
+                    else if (d.status === 'DISABLED' && d.bot_link) {
+                        // Verification disabled → verify, then go STRAIGHT to bot
+                        showGateway('disabled', d.bot_link);
                     }
                     else {
                         showBypass(d.reason);
                     }
                 })
-                .catch(() => showGateway());
+                .catch(() => showGateway('ok', null));
 
-            function showGateway() {
+            // mode = 'ok' (shortener) | 'disabled' (bot link)
+            function showGateway(mode, botLink) {
                 card.classList.remove('bypass-theme');
                 dynamicDiv.innerHTML = `
                     <h1>Security Gateway</h1>
                     <p class="subtitle">Verification required to establish a secure tunnel. Automated scripts are restricted.</p>
                     <button class="btn-primary btn-cyan" id="verifyBtn"><i class="fas fa-fingerprint"></i> Verify Identity</button>
                 `;
-                document.getElementById('verifyBtn').onclick = startVerification;
+                document.getElementById('verifyBtn').onclick = () => startVerification(mode, botLink);
             }
 
-            function startVerification() {
+            function startVerification(mode, botLink) {
                 fetch(`${apiBase}/api/mark_gateway_opened?token=${hexToken}`).catch(() => {});
                 dynamicDiv.innerHTML = `
                     <h1>Verifying</h1>
@@ -282,19 +277,25 @@
                 const el = document.getElementById('countdown');
                 const iv = setInterval(() => {
                     counter--; if (el) el.textContent = counter;
-                    if (counter <= 0) { clearInterval(iv); showProceed(); }
+                    if (counter <= 0) { clearInterval(iv); showProceed(mode, botLink); }
                 }, 1000);
             }
 
-            function showProceed() {
+            function showProceed(mode, botLink) {
                 dynamicDiv.innerHTML = `
                     <h1>Access Verified</h1>
                     <p class="subtitle">Your identity has been confirmed. Click proceed to continue.</p>
                     <button class="btn-primary btn-cyan" id="proceedBtn"><i class="fas fa-arrow-right"></i> Proceed</button>
                 `;
                 document.getElementById('proceedBtn').onclick = () => {
-                    fetch(`${apiBase}/api/mark_shortener_redirect?token=${hexToken}`).catch(() => {});
-                    window.location.href = shortenerUrl;
+                    if (mode === 'disabled' && botLink) {
+                        // Verification disabled → skip shortener, go straight to bot
+                        window.location.href = botLink;
+                    } else {
+                        // Normal flow → mark redirect, then send to shortener
+                        fetch(`${apiBase}/api/mark_shortener_redirect?token=${hexToken}`).catch(() => {});
+                        window.location.href = shortenerUrl;
+                    }
                 };
             }
 
