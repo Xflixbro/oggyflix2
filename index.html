@@ -1,1783 +1,1261 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Security Gateway</title>
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-
-        html,
-        body {
-            width: 100%;
-            min-height: 100%;
-        }
-
-        body {
-            min-height: 100vh;
-            background:
-                radial-gradient(circle at 50% 45%,
-                    rgba(0, 40, 75, 0.18),
-                    transparent 45%),
-                #070b1b;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        /* =========================
-           BACKGROUND PARTICLES
-        ========================= */
-
-        #particle-canvas {
-            position: fixed;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            background:
-                radial-gradient(
-                    circle at 50% 50%,
-                    transparent 0%,
-                    rgba(0, 0, 20, 0.25) 65%,
-                    rgba(0, 0, 15, 0.65) 100%
-                );
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        /* =========================
-           MAIN CARD
-        ========================= */
-
-        .card {
-            width: 100%;
-            max-width: 620px;
-            min-height: 720px;
-
-            border: 1px solid rgba(0, 255, 255, 0.38);
-            border-radius: 42px;
-
-            background:
-                radial-gradient(
-                    circle at 50% 25%,
-                    rgba(0, 80, 120, 0.08),
-                    transparent 42%
-                ),
-                rgba(7, 12, 31, 0.78);
-
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-
-            box-shadow:
-                0 0 30px rgba(0, 255, 255, 0.04),
-                inset 0 0 30px rgba(0, 255, 255, 0.015);
-
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-
-            padding: 65px 45px;
-
-            position: relative;
-            z-index: 2;
-
-            text-align: center;
-        }
-
-        /* =========================
-           LOGO
-        ========================= */
-
-        .logo-container {
-            width: 220px;
-            height: 220px;
-            position: relative;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
-            margin-bottom: 55px;
-        }
-
-        /* Outer dotted ring */
-
-        .logo-container::before {
-            content: "";
-            position: absolute;
-
-            width: 218px;
-            height: 218px;
-
-            border-radius: 50%;
-
-            border: 4px dotted #00eaff;
-
-            box-shadow:
-                0 0 12px rgba(0, 234, 255, 0.9),
-                0 0 28px rgba(0, 234, 255, 0.55);
-
-            animation: rotateRing 18s linear infinite;
-        }
-
-        /* Inner cyan ring */
-
-        .logo-container::after {
-            content: "";
-            position: absolute;
-
-            width: 188px;
-            height: 188px;
-
-            border-radius: 50%;
-
-            border: 5px solid #00eaff;
-
-            box-shadow:
-                0 0 10px #00eaff,
-                0 0 28px rgba(0, 234, 255, 0.85),
-                0 0 55px rgba(0, 234, 255, 0.4);
-        }
-
-        .gateway-logo {
-            width: 174px;
-            height: 174px;
-
-            object-fit: cover;
-
-            border-radius: 50%;
-
-            position: relative;
-            z-index: 3;
-
-            border: 3px solid rgba(0, 234, 255, 0.85);
-
-            box-shadow:
-                0 0 15px rgba(0, 234, 255, 0.8),
-                0 0 40px rgba(0, 234, 255, 0.5),
-                0 0 75px rgba(0, 234, 255, 0.28);
-
-            background: #080d1d;
-        }
-
-        @keyframes rotateRing {
-            from {
-                transform: rotate(0deg);
-            }
-
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* =========================
-           CONTENT
-        ========================= */
-
-        #dynamic-content {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        h1 {
-            font-size: 48px;
-            line-height: 1.15;
-
-            font-weight: 800;
-
-            letter-spacing: 8px;
-            text-transform: uppercase;
-
-            color: #f5f8ff;
-
-            text-shadow:
-                0 0 8px rgba(255,255,255,0.55),
-                0 0 24px rgba(0,255,255,0.12);
-
-            margin-bottom: 32px;
-        }
-
-        .subtitle {
-            max-width: 520px;
-
-            font-size: 21px;
-            line-height: 1.9;
-
-            color: #b9c1d5;
-
-            margin-bottom: 42px;
-
-            text-shadow:
-                0 2px 10px rgba(0,0,0,0.7);
-        }
-
-        /* =========================
-           BUTTON
-        ========================= */
-
-        .btn-primary {
-            width: 100%;
-            max-width: 500px;
-
-            min-height: 82px;
-
-            border-radius: 22px;
-
-            border: 1px solid rgba(0, 255, 255, 0.55);
-
-            background: #00eaff;
-
-            color: #020713;
-
-            font-size: 21px;
-            font-weight: 800;
-
-            letter-spacing: 6px;
-
-            text-transform: uppercase;
-
-            cursor: pointer;
-
-            box-shadow:
-                0 0 15px rgba(0, 234, 255, 0.7),
-                0 10px 40px rgba(0, 234, 255, 0.28);
-
-            transition:
-                transform 0.2s ease,
-                box-shadow 0.2s ease,
-                background 0.2s ease;
-
-            outline: none;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-
-            background: #22efff;
-
-            box-shadow:
-                0 0 22px rgba(0, 234, 255, 0.9),
-                0 12px 50px rgba(0, 234, 255, 0.4);
-        }
-
-        .btn-primary:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        /* =========================
-           STATUS
-        ========================= */
-
-        .status-indicator {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
-            gap: 12px;
-
-            color: #00eaff;
-
-            font-size: 18px;
-
-            margin-top: 25px;
-
-            letter-spacing: 2px;
-        }
-
-        .spinner {
-            display: inline-block;
-
-            width: 22px;
-            height: 22px;
-
-            border-radius: 50%;
-
-            border: 3px solid rgba(0, 234, 255, 0.25);
-            border-top-color: #00eaff;
-
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* =========================
-           TERMINAL
-        ========================= */
-
-        .terminal-box {
-            width: 100%;
-            max-width: 500px;
-
-            background: rgba(0, 7, 15, 0.88);
-
-            border: 1px solid rgba(0, 234, 255, 0.55);
-
-            border-radius: 18px;
-
-            padding: 28px;
-
-            margin: 5px 0 25px;
-
-            text-align: left;
-
-            font-family: "Courier New", monospace;
-
-            font-size: 16px;
-
-            color: #00eaff;
-
-            line-height: 1.7;
-
-            box-shadow:
-                0 0 20px rgba(0, 234, 255, 0.12),
-                inset 0 0 20px rgba(0, 234, 255, 0.03);
-        }
-
-        .terminal-box .line {
-            opacity: 0;
-
-            animation:
-                fadeIn 0.5s forwards;
-        }
-
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-            }
-        }
-
-        /* =========================
-           ERROR
-        ========================= */
-
-        .error-message {
-            width: 100%;
-
-            background: rgba(40, 5, 10, 0.6);
-
-            border: 1px solid rgba(255, 70, 70, 0.45);
-
-            border-radius: 20px;
-
-            padding: 30px;
-
-            color: #ffb0b0;
-
-            box-shadow:
-                0 0 25px rgba(255, 0, 0, 0.08);
-        }
-
-        .error-message h3 {
-            font-size: 24px;
-
-            color: #ff6b6b;
-
-            margin-bottom: 15px;
-        }
-
-        .error-message p {
-            font-size: 17px;
-
-            line-height: 1.7;
-
-            color: #d8c7c7;
-        }
-
-        /* =========================
-           BYPASS THEME
-        ========================= */
-
-        .bypass-theme {
-            background:
-                radial-gradient(
-                    circle at 50% 20%,
-                    rgba(100, 0, 10, 0.22),
-                    transparent 50%
-                ),
-                rgba(30, 3, 8, 0.88);
-
-            border-color: rgba(255, 50, 70, 0.6);
-
-            box-shadow:
-                0 0 40px rgba(255, 0, 30, 0.08),
-                inset 0 0 30px rgba(255, 0, 30, 0.025);
-        }
-
-        .bypass-theme .logo-container::before {
-            border-color: #ff334f;
-
-            box-shadow:
-                0 0 15px rgba(255, 40, 60, 0.9),
-                0 0 35px rgba(255, 40, 60, 0.5);
-        }
-
-        .bypass-theme .logo-container::after {
-            border-color: #ff334f;
-
-            box-shadow:
-                0 0 12px #ff334f,
-                0 0 30px rgba(255, 40, 60, 0.8),
-                0 0 55px rgba(255, 40, 60, 0.35);
-        }
-
-        .bypass-theme .gateway-logo {
-            border-color: #ff334f;
-
-            box-shadow:
-                0 0 18px rgba(255, 40, 60, 0.9),
-                0 0 45px rgba(255, 40, 60, 0.5);
-        }
-
-        .bypass-theme h1 {
-            color: #ff6575;
-
-            text-shadow:
-                0 0 15px rgba(255, 0, 30, 0.8),
-                0 0 35px rgba(255, 0, 30, 0.4);
-        }
-
-        .bypass-theme .terminal-box {
-            border-color: rgba(255, 50, 70, 0.55);
-
-            color: #ff7788;
-
-            background: rgba(35, 0, 5, 0.9);
-
-            box-shadow:
-                0 0 25px rgba(255, 0, 30, 0.1);
-        }
-
-        .bypass-theme .btn-primary {
-            background: #080609;
-
-            color: white;
-
-            border-color: rgba(255, 70, 80, 0.45);
-
-            box-shadow:
-                0 0 15px rgba(255, 40, 60, 0.15);
-        }
-
-        /* =========================
-           DEBUG
-        ========================= */
-
-        #debug-console {
-            display: none;
-
-            width: 100%;
-
-            margin-top: 20px;
-
-            padding: 10px;
-
-            border: 1px solid #00ff00;
-
-            border-radius: 8px;
-
-            background: rgba(0,0,0,0.85);
-
-            color: #00ff00;
-
-            font-family: monospace;
-
-            font-size: 12px;
-
-            text-align: left;
-
-            max-height: 200px;
-
-            overflow: auto;
-        }
-
-        /* =========================
-           MOBILE
-        ========================= */
-
-        @media (max-width: 600px) {
-
-            body {
-                padding: 12px;
-            }
-
-            .card {
-                min-height: 720px;
-
-                padding:
-                    55px
-                    28px;
-
-                border-radius: 38px;
-            }
-
-            .logo-container {
-                width: 190px;
-                height: 190px;
-
-                margin-bottom: 45px;
-            }
-
-            .logo-container::before {
-                width: 188px;
-                height: 188px;
-            }
-
-            .logo-container::after {
-                width: 162px;
-                height: 162px;
-            }
-
-            .gateway-logo {
-                width: 150px;
-                height: 150px;
-            }
-
-            h1 {
-                font-size: 36px;
-
-                letter-spacing: 6px;
-
-                line-height: 1.25;
-
-                margin-bottom: 25px;
-            }
-
-            .subtitle {
-                font-size: 18px;
-
-                line-height: 1.75;
-
-                margin-bottom: 35px;
-            }
-
-            .btn-primary {
-                min-height: 78px;
-
-                font-size: 18px;
-
-                letter-spacing: 5px;
-
-                border-radius: 20px;
-            }
-
-            .terminal-box {
-                font-size: 14px;
-
-                padding: 22px;
-
-                line-height: 1.65;
-            }
-        }
-
-        @media (max-width: 400px) {
-
-            .card {
-                padding:
-                    45px
-                    20px;
-            }
-
-            .logo-container {
-                width: 170px;
-                height: 170px;
-            }
-
-            .logo-container::before {
-                width: 168px;
-                height: 168px;
-            }
-
-            .logo-container::after {
-                width: 145px;
-                height: 145px;
-            }
-
-            .gateway-logo {
-                width: 135px;
-                height: 135px;
-            }
-
-            h1 {
-                font-size: 31px;
-                letter-spacing: 5px;
-            }
-
-            .subtitle {
-                font-size: 16px;
-            }
-
-            .btn-primary {
-                font-size: 16px;
-                letter-spacing: 4px;
-            }
-        }
-    </style>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Security Gateway</title>
+ <style>
+ * {
+ margin: 0;
+ padding: 0;
+ box-sizing: border-box;
+ font-family: Arial, Helvetica, sans-serif;
+ }
+ html,
+ body {
+ width: 100%;
+ min-height: 100%;
+ }
+ body {
+ min-height: 100vh;
+ background:
+ radial-gradient(circle at 50% 45%,
+ rgba(0, 40, 75, 0.18),
+ transparent 45%),
+ #070b1b;
+ color: white;
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ padding: 20px;
+ overflow-x: hidden;
+ position: relative;
+ }
+ /* =========================
+ BACKGROUND PARTICLES
+ ========================= */
+ #particle-canvas {
+ position: fixed;
+ inset: 0;
+ width: 100%;
+ height: 100%;
+ z-index: 0;
+ pointer-events: none;
+ }
+ body::before {
+ content: "";
+ position: fixed;
+ inset: 0;
+ background:
+ radial-gradient(
+ circle at 50% 50%,
+ transparent 0%,
+ rgba(0, 0, 20, 0.25) 65%,
+ rgba(0, 0, 15, 0.65) 100%
+ );
+ pointer-events: none;
+ z-index: 1;
+ }
+ /* =========================
+ MAIN CARD
+ ========================= */
+ .card {
+ width: 100%;
+ max-width: 620px;
+ min-height: 720px;
+ border: 1px solid rgba(0, 255, 255, 0.38);
+ border-radius: 42px;
+ background:
+ radial-gradient(
+ circle at 50% 25%,
+ rgba(0, 80, 120, 0.08),
+ transparent 42%
+ ),
+ rgba(7, 12, 31, 0.78);
+ backdrop-filter: blur(8px);
+ -webkit-backdrop-filter: blur(8px);
+ box-shadow:
+ 0 0 30px rgba(0, 255, 255, 0.04),
+ inset 0 0 30px rgba(0, 255, 255, 0.015);
+ display: flex;
+ flex-direction: column;
+ justify-content: center;
+ align-items: center;
+ padding: 65px 45px;
+ position: relative;
+ z-index: 2;
+ text-align: center;
+ }
+ /* =========================
+ LOGO
+ ========================= */
+ .logo-container {
+ width: 220px;
+ height: 220px;
+ position: relative;
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ margin-bottom: 55px;
+ }
+ /* Outer dotted ring */
+ .logo-container::before {
+ content: "";
+ position: absolute;
+ width: 218px;
+ height: 218px;
+ border-radius: 50%;
+ border: 4px dotted #00eaff;
+ box-shadow:
+ 0 0 12px rgba(0, 234, 255, 0.9),
+ 0 0 28px rgba(0, 234, 255, 0.55);
+ animation: rotateRing 18s linear infinite;
+ }
+ /* Inner cyan ring */
+ .logo-container::after {
+ content: "";
+ position: absolute;
+ width: 188px;
+ height: 188px;
+ border-radius: 50%;
+ border: 5px solid #00eaff;
+ box-shadow:
+ 0 0 10px #00eaff,
+ 0 0 28px rgba(0, 234, 255, 0.85),
+ 0 0 55px rgba(0, 234, 255, 0.4);
+ }
+ .gateway-logo {
+ width: 174px;
+ height: 174px;
+ object-fit: cover;
+ border-radius: 50%;
+ position: relative;
+ z-index: 3;
+ border: 3px solid rgba(0, 234, 255, 0.85);
+ box-shadow:
+ 0 0 15px rgba(0, 234, 255, 0.8),
+ 0 0 40px rgba(0, 234, 255, 0.5),
+ 0 0 75px rgba(0, 234, 255, 0.28);
+ background: #080d1d;
+ }
+ @keyframes rotateRing {
+ from {
+ transform: rotate(0deg);
+ }
+ to {
+ transform: rotate(360deg);
+ }
+ }
+ /* =========================
+ CONTENT
+ ========================= */
+ #dynamic-content {
+ width: 100%;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ }
+ h1 {
+ font-size: 48px;
+ line-height: 1.15;
+ font-weight: 800;
+ letter-spacing: 8px;
+ text-transform: uppercase;
+ color: #f5f8ff;
+ text-shadow:
+ 0 0 8px rgba(255,255,255,0.55),
+ 0 0 24px rgba(0,255,255,0.12);
+ margin-bottom: 32px;
+ }
+ .subtitle {
+ max-width: 520px;
+ font-size: 21px;
+ line-height: 1.9;
+ color: #b9c1d5;
+ margin-bottom: 42px;
+ text-shadow:
+ 0 2px 10px rgba(0,0,0,0.7);
+ }
+ /* =========================
+ BUTTON
+ ========================= */
+ .btn-primary {
+ width: 100%;
+ max-width: 500px;
+ min-height: 82px;
+ border-radius: 22px;
+ border: 1px solid rgba(0, 255, 255, 0.55);
+ background: #00eaff;
+ color: #020713;
+ font-size: 21px;
+ font-weight: 800;
+ letter-spacing: 6px;
+ text-transform: uppercase;
+ cursor: pointer;
+ box-shadow:
+ 0 0 15px rgba(0, 234, 255, 0.7),
+ 0 10px 40px rgba(0, 234, 255, 0.28);
+ transition:
+ transform 0.2s ease,
+ box-shadow 0.2s ease,
+ background 0.2s ease;
+ outline: none;
+ }
+ .btn-primary:hover {
+ transform: translateY(-2px);
+ background: #22efff;
+ box-shadow:
+ 0 0 22px rgba(0, 234, 255, 0.9),
+ 0 12px 50px rgba(0, 234, 255, 0.4);
+ }
+ .btn-primary:active {
+ transform: scale(0.98);
+ }
+ .btn-primary:disabled {
+ opacity: 0.6;
+ cursor: not-allowed;
+ }
+ /* =========================
+ STATUS
+ ========================= */
+ .status-indicator {
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ gap: 12px;
+ color: #00eaff;
+ font-size: 18px;
+ margin-top: 25px;
+ letter-spacing: 2px;
+ }
+ .spinner {
+ display: inline-block;
+ width: 22px;
+ height: 22px;
+ border-radius: 50%;
+ border: 3px solid rgba(0, 234, 255, 0.25);
+ border-top-color: #00eaff;
+ animation: spin 0.8s linear infinite;
+ }
+ @keyframes spin {
+ to {
+ transform: rotate(360deg);
+ }
+ }
+ /* =========================
+ TERMINAL
+ ========================= */
+ .terminal-box {
+ width: 100%;
+ max-width: 500px;
+ background: rgba(0, 7, 15, 0.88);
+ border: 1px solid rgba(0, 234, 255, 0.55);
+ border-radius: 18px;
+ padding: 28px;
+ margin: 5px 0 25px;
+ text-align: left;
+ font-family: "Courier New", monospace;
+ font-size: 16px;
+ color: #00eaff;
+ line-height: 1.7;
+ box-shadow:
+ 0 0 20px rgba(0, 234, 255, 0.12),
+ inset 0 0 20px rgba(0, 234, 255, 0.03);
+ }
+ .terminal-box .line {
+ opacity: 0;
+ animation:
+ fadeIn 0.5s forwards;
+ }
+ @keyframes fadeIn {
+ to {
+ opacity: 1;
+ }
+ }
+ /* =========================
+ ERROR
+ ========================= */
+ .error-message {
+ width: 100%;
+ background: rgba(40, 5, 10, 0.6);
+ border: 1px solid rgba(255, 70, 70, 0.45);
+ border-radius: 20px;
+ padding: 30px;
+ color: #ffb0b0;
+ box-shadow:
+ 0 0 25px rgba(255, 0, 0, 0.08);
+ }
+ .error-message h3 {
+ font-size: 24px;
+ color: #ff6b6b;
+ margin-bottom: 15px;
+ }
+ .error-message p {
+ font-size: 17px;
+ line-height: 1.7;
+ color: #d8c7c7;
+ }
+ /* =========================
+ BYPASS THEME
+ ========================= */
+ .bypass-theme {
+ background:
+ radial-gradient(
+ circle at 50% 20%,
+ rgba(100, 0, 10, 0.22),
+ transparent 50%
+ ),
+ rgba(30, 3, 8, 0.88);
+ border-color: rgba(255, 50, 70, 0.6);
+ box-shadow:
+ 0 0 40px rgba(255, 0, 30, 0.08),
+ inset 0 0 30px rgba(255, 0, 30, 0.025);
+ }
+ .bypass-theme .logo-container::before {
+ border-color: #ff334f;
+ box-shadow:
+ 0 0 15px rgba(255, 40, 60, 0.9),
+ 0 0 35px rgba(255, 40, 60, 0.5);
+ }
+ .bypass-theme .logo-container::after {
+ border-color: #ff334f;
+ box-shadow:
+ 0 0 12px #ff334f,
+ 0 0 30px rgba(255, 40, 60, 0.8),
+ 0 0 55px rgba(255, 40, 60, 0.35);
+ }
+ .bypass-theme .gateway-logo {
+ border-color: #ff334f;
+ box-shadow:
+ 0 0 18px rgba(255, 40, 60, 0.9),
+ 0 0 45px rgba(255, 40, 60, 0.5);
+ }
+ .bypass-theme h1 {
+ color: #ff6575;
+ text-shadow:
+ 0 0 15px rgba(255, 0, 30, 0.8),
+ 0 0 35px rgba(255, 0, 30, 0.4);
+ }
+ .bypass-theme .terminal-box {
+ border-color: rgba(255, 50, 70, 0.55);
+ color: #ff7788;
+ background: rgba(35, 0, 5, 0.9);
+ box-shadow:
+ 0 0 25px rgba(255, 0, 30, 0.1);
+ }
+ .bypass-theme .btn-primary {
+ background: #080609;
+ color: white;
+ border-color: rgba(255, 70, 80, 0.45);
+ box-shadow:
+ 0 0 15px rgba(255, 40, 60, 0.15);
+ }
+ /* =========================
+ DEBUG
+ ========================= */
+ #debug-console {
+ display: none;
+ width: 100%;
+ margin-top: 20px;
+ padding: 10px;
+ border: 1px solid #00ff00;
+ border-radius: 8px;
+ background: rgba(0,0,0,0.85);
+ color: #00ff00;
+ font-family: monospace;
+ font-size: 12px;
+ text-align: left;
+ max-height: 200px;
+ overflow: auto;
+ }
+ /* =========================
+ MOBILE
+ ========================= */
+ @media (max-width: 600px) {
+ body {
+ padding: 12px;
+ }
+ .card {
+ min-height: 720px;
+ padding:
+ 55px
+ 28px;
+ border-radius: 38px;
+ }
+ .logo-container {
+ width: 190px;
+ height: 190px;
+ margin-bottom: 45px;
+ }
+ .logo-container::before {
+ width: 188px;
+ height: 188px;
+ }
+ .logo-container::after {
+ width: 162px;
+ height: 162px;
+ }
+ .gateway-logo {
+ width: 150px;
+ height: 150px;
+ }
+ h1 {
+ font-size: 36px;
+ letter-spacing: 6px;
+ line-height: 1.25;
+ margin-bottom: 25px;
+ }
+ .subtitle {
+ font-size: 18px;
+ line-height: 1.75;
+ margin-bottom: 35px;
+ }
+ .btn-primary {
+ min-height: 78px;
+ font-size: 18px;
+ letter-spacing: 5px;
+ border-radius: 20px;
+ }
+ .terminal-box {
+ font-size: 14px;
+ padding: 22px;
+ line-height: 1.65;
+ }
+ }
+ @media (max-width: 400px) {
+ .card {
+ padding:
+ 45px
+ 20px;
+ }
+ .logo-container {
+ width: 170px;
+ height: 170px;
+ }
+ .logo-container::before {
+ width: 168px;
+ height: 168px;
+ }
+ .logo-container::after {
+ width: 145px;
+ height: 145px;
+ }
+ .gateway-logo {
+ width: 135px;
+ height: 135px;
+ }
+ h1 {
+ font-size: 31px;
+ letter-spacing: 5px;
+ }
+ .subtitle {
+ font-size: 16px;
+ }
+ .btn-primary {
+ font-size: 16px;
+ letter-spacing: 4px;
+ }
+ }
+ </style>
 </head>
-
 <body>
-
-    <canvas id="particle-canvas"></canvas>
-
-    <div class="card" id="card">
-
-        <!-- CIRCLE IMAGE -->
-        <div class="logo-container">
-            <img
-                id="gateway-logo"
-                class="gateway-logo"
-                src="https://files.catbox.moe/1v0rqm.jpg"
-                alt="Gateway Logo"
-            >
-        </div>
-
-        <div id="dynamic-content"></div>
-
-        <div id="debug-console"></div>
-
-    </div>
-
-
-    <!-- =========================
-         PARTICLE BACKGROUND
-    ========================= -->
-
-    <script>
-        (function () {
-
-            const canvas =
-                document.getElementById("particle-canvas");
-
-            if (!canvas) return;
-
-            const ctx =
-                canvas.getContext("2d");
-
-            function resize() {
-
-                canvas.width =
-                    window.innerWidth;
-
-                canvas.height =
-                    window.innerHeight;
-            }
-
-            resize();
-
-            window.addEventListener(
-                "resize",
-                resize
-            );
-
-            const particles = [];
-
-            for (let i = 0; i < 90; i++) {
-
-                particles.push({
-
-                    x:
-                        Math.random()
-                        * canvas.width,
-
-                    y:
-                        Math.random()
-                        * canvas.height,
-
-                    radius:
-                        Math.random() * 2 + 0.5,
-
-                    speedX:
-                        (Math.random() - 0.5)
-                        * 0.35,
-
-                    speedY:
-                        (Math.random() - 0.5)
-                        * 0.35,
-
-                    alpha:
-                        Math.random()
-                        * 0.65 + 0.2
-                });
-            }
-
-            function animate() {
-
-                ctx.clearRect(
-                    0,
-                    0,
-                    canvas.width,
-                    canvas.height
-                );
-
-                particles.forEach(p => {
-
-                    p.x += p.speedX;
-                    p.y += p.speedY;
-
-                    if (p.x < 0)
-                        p.x = canvas.width;
-
-                    if (p.x > canvas.width)
-                        p.x = 0;
-
-                    if (p.y < 0)
-                        p.y = canvas.height;
-
-                    if (p.y > canvas.height)
-                        p.y = 0;
-
-                    ctx.beginPath();
-
-                    ctx.arc(
-                        p.x,
-                        p.y,
-                        p.radius,
-                        0,
-                        Math.PI * 2
-                    );
-
-                    ctx.fillStyle =
-                        `rgba(220,240,255,${p.alpha})`;
-
-                    ctx.shadowBlur = 8;
-
-                    ctx.shadowColor =
-                        "#ffffff";
-
-                    ctx.fill();
-                });
-
-                requestAnimationFrame(animate);
-            }
-
-            animate();
-
-        })();
-    </script>
-
-
-    <!-- =========================
-         GATEWAY LOGIC
-    ========================= -->
-
-    <script>
-
-        (function () {
-
-            "use strict";
-
-
-            const CONFIG = {
-
-                API_BASE:
-                    "https://wee-dot-yedhuku2004-543d97f6.koyeb.app",
-
-                COUNTDOWN_SECONDS: 3
-
-            };
-
-
-            const DEBUG =
-                window.location.hash === "#debug";
-
-
-            function log(...args) {
-
-                if (!DEBUG)
-                    return;
-
-                console.log(
-                    "[GW]",
-                    ...args
-                );
-
-                const d =
-                    document.getElementById(
-                        "debug-console"
-                    );
-
-                if (d) {
-
-                    d.style.display =
-                        "block";
-
-                    d.innerHTML +=
-                        "<div>" +
-                        args
-                            .map(String)
-                            .join(" ") +
-                        "</div>";
-                }
-            }
-
-
-            const dynamicDiv =
-                document.getElementById(
-                    "dynamic-content"
-                );
-
-            const card =
-                document.getElementById(
-                    "card"
-                );
-
-
-            /* =========================
-               BASE64 URL DECODE
-            ========================= */
-
-            function base64UrlDecode(s) {
-
-                s =
-                    s.replace(
-                        /-/g,
-                        "+"
-                    )
-                    .replace(
-                        /_/g,
-                        "/"
-                    );
-
-                while (
-                    s.length % 4
-                ) {
-
-                    s += "=";
-                }
-
-                return atob(s);
-            }
-
-
-            /* =========================
-               ROUTING
-            ========================= */
-
-            const path =
-                window.location.pathname;
-
-            const urlParams =
-                new URLSearchParams(
-                    window.location.search
-                );
-
-
-            /*
-             * /access/{token}?url=...
-             */
-
-            if (
-                path.startsWith(
-                    "/access/"
-                )
-            ) {
-
-                const hexToken =
-                    path.split("/")[2]
-                    || "";
-
-                const encodedUrl =
-                    urlParams.get("url");
-
-
-                if (!hexToken) {
-
-                    showInvalid();
-
-                    return;
-                }
-
-
-                let shortenerUrl;
-
-
-                try {
-
-                    shortenerUrl =
-                        base64UrlDecode(
-                            encodedUrl
-                        );
-
-                } catch (e) {
-
-                    showInvalid();
-
-                    return;
-                }
-
-
-                if (
-                    !shortenerUrl
-                    .startsWith("http")
-                ) {
-
-                    showInvalid();
-
-                    return;
-                }
-
-
-                routeAccess(
-                    hexToken,
-                    shortenerUrl
-                );
-
-                return;
-            }
-
-
-            /*
-             * /s?h=...&a=...&b=...
-             */
-
-            if (
-                path === "/s" ||
-                path.startsWith("/s/")
-            ) {
-
-                const h =
-                    urlParams.get("h");
-
-                const a =
-                    urlParams.get("a");
-
-                const b =
-                    urlParams.get("b")
-                    || "eonxstBot";
-
-
-                if (!h || !a) {
-
-                    showInvalid();
-
-                    return;
-                }
-
-
-                routeGranted(
-                    h,
-                    a,
-                    b
-                );
-
-                return;
-            }
-
-
-            /*
-             * Legacy /
-             */
-
-            routeLegacy();
-
-            return;
-
-
-            /* =========================
-               LEGACY
-            ========================= */
-
-            function routeLegacy() {
-
-                dynamicDiv.innerHTML = `
-
-                    <h1>
-                        SECURITY<br>
-                        GATEWAY
-                    </h1>
-
-                    <p class="subtitle">
-                        Verification required to establish a secure tunnel.
-                        Automated scripts are restricted.
-                    </p>
-
-                    <div class="error-message">
-
-                        <h3>
-                            Invalid or missing link
-                        </h3>
-
-                        <p>
-                            The URL does not contain
-                            a recognised file reference.
-                        </p>
-
-                    </div>
-
-                `;
-            }
-
-
-            /* =========================
-               ACCESS ROUTE
-            ========================= */
-
-            function routeAccess(
-                hexToken,
-                shortenerUrl
-            ) {
-
-                const apiBase =
-                    CONFIG.API_BASE
-                    .replace(/\/+$/, "");
-
-
-                fetch(
-                    `${apiBase}/api/verify_token?token=${encodeURIComponent(hexToken)}`
-                )
-
-                .then(r => r.json())
-
-                .then(d => {
-
-                    log(
-                        "verify_token:",
-                        d
-                    );
-
-
-                    if (
-                        d.status === "OK"
-                    ) {
-
-                        if (
-                            d.verification_enabled
-                            === false
-                        ) {
-
-                            showDirectRedirect(
-                                d.bot_link
-                                    || shortenerUrl,
-
-                                hexToken,
-
-                                apiBase
-                            );
-
-                        } else {
-
-                            showGateway(
-                                hexToken,
-                                apiBase,
-                                shortenerUrl,
-                                d
-                            );
-                        }
-
-                    }
-
-                    else if (
-                        d.status === "INVALID" ||
-                        d.status === "EXPIRED" ||
-                        d.status === "REUSED"
-                    ) {
-
-                        showError(
-                            d.reason
-                            ||
-                            "Invalid or expired link"
-                        );
-
-                    }
-
-                    else if (
-                        d.status === "BYPASS"
-                    ) {
-
-                        showBypass(
-                            d.reason,
-                            d.bot_link
-                                || shortenerUrl
-                        );
-
-                    }
-
-                    else {
-
-                        showError(
-                            "Unknown response from server"
-                        );
-                    }
-
-                })
-
-                .catch(err => {
-
-                    log(
-                        "API error:",
-                        err
-                    );
-
-                    /*
-                     * Keep the existing behaviour:
-                     * if the API cannot be reached,
-                     * show the verification gateway.
-                     */
-
-                    showGateway(
-                        hexToken,
-                        apiBase,
-                        shortenerUrl,
-                        {}
-                    );
-
-                });
-            }
-
-
-            /* =========================
-               SECURITY GATEWAY
-            ========================= */
-
-            function showGateway(
-                hexToken,
-                apiBase,
-                shortenerUrl,
-                info
-            ) {
-
-                card.classList.remove(
-                    "bypass-theme"
-                );
-
-
-                dynamicDiv.innerHTML = `
-
-                    <h1>
-                        SECURITY<br>
-                        GATEWAY
-                    </h1>
-
-                    <p class="subtitle">
-                        Verification required to establish a
-                        secure tunnel. Automated scripts are restricted.
-                    </p>
-
-                    <button
-                        class="btn-primary"
-                        id="verifyBtn"
-                    >
-                        VERIFY IDENTITY
-                    </button>
-
-                `;
-
-
-                document
-                    .getElementById("verifyBtn")
-                    .onclick = function () {
-
-                        startVerification(
-                            hexToken,
-                            apiBase,
-                            shortenerUrl,
-                            info
-                        );
-
-                    };
-            }
-
-
-            /* =========================
-               VERIFICATION
-            ========================= */
-
-            function startVerification(
-                hexToken,
-                apiBase,
-                shortenerUrl,
-                info
-            ) {
-
-                fetch(
-                    `${apiBase}/api/mark_gateway_opened?token=${encodeURIComponent(hexToken)}`
-                )
-                .catch(() => {});
-
-
-                dynamicDiv.innerHTML = `
-
-                    <h1>
-                        SECURITY<br>
-                        GATEWAY
-                    </h1>
-
-                    <p class="subtitle">
-                        Verification required to establish a
-                        secure tunnel. Automated scripts are restricted.
-                    </p>
-
-                    <button
-                        class="btn-primary"
-                        disabled
-                    >
-                        VERIFYING... 
-                        <span id="countdown">
-                            ${CONFIG.COUNTDOWN_SECONDS}
-                        </span>
-                    </button>
-
-                `;
-
-
-                let counter =
-                    CONFIG.COUNTDOWN_SECONDS;
-
-
-                const el =
-                    document.getElementById(
-                        "countdown"
-                    );
-
-
-                const iv =
-                    setInterval(
-                        () => {
-
-                            counter--;
-
-                            if (el) {
-
-                                el.textContent =
-                                    counter;
-                            }
-
-
-                            if (
-                                counter <= 0
-                            ) {
-
-                                clearInterval(iv);
-
-                                showRouting(
-                                    hexToken,
-                                    apiBase,
-                                    shortenerUrl,
-                                    info
-                                );
-                            }
-
-                        },
-                        1000
-                    );
-            }
-
-
-            /* =========================
-               ROUTING SCREEN
-            ========================= */
-
-            function showRouting(
-                hexToken,
-                apiBase,
-                shortenerUrl,
-                info
-            ) {
-
-                dynamicDiv.innerHTML = `
-
-                    <h1>
-                        SECURITY<br>
-                        GATEWAY
-                    </h1>
-
-                    <p class="subtitle">
-                        Verification completed successfully.
-                    </p>
-
-                    <button
-                        class="btn-primary"
-                        disabled
-                    >
-                        ROUTING SECURELY...
-                    </button>
-
-                `;
-
-
-                setTimeout(
-                    () => {
-
-                        showProceed(
-                            hexToken,
-                            apiBase,
-                            shortenerUrl,
-                            info
-                        );
-
-                    },
-                    1000
-                );
-            }
-
-
-            /* =========================
-               PROCEED
-            ========================= */
-
-            function showProceed(
-                hexToken,
-                apiBase,
-                shortenerUrl,
-                info
-            ) {
-
-                const target =
-                    info &&
-                    info.shortener_url
-                        ? info.shortener_url
-                        : shortenerUrl;
-
-
-                dynamicDiv.innerHTML = `
-
-                    <h1>
-                        SECURITY<br>
-                        GATEWAY
-                    </h1>
-
-                    <p class="subtitle">
-                        Verification completed.
-                        Continue to access the requested content.
-                    </p>
-
-                    <button
-                        class="btn-primary"
-                        id="proceedBtn"
-                    >
-                        PROCEED
-                    </button>
-
-                `;
-
-
-                document
-                    .getElementById("proceedBtn")
-                    .onclick = function () {
-
-                        fetch(
-                            `${apiBase}/api/mark_shortener_redirect?token=${encodeURIComponent(hexToken)}`
-                        )
-                        .catch(() => {});
-
-
-                        window.location.href =
-                            target;
-                    };
-            }
-
-
-            /* =========================
-               DIRECT REDIRECT
-            ========================= */
-
-            function showDirectRedirect(
-                botLink,
-                hexToken,
-                apiBase
-            ) {
-
-                card.classList.remove(
-                    "bypass-theme"
-                );
-
-
-                dynamicDiv.innerHTML = `
-
-                    <h1>
-                        ACCESS<br>
-                        GRANTED
-                    </h1>
-
-                    <p class="subtitle">
-                        Verification is not required.
-                        Redirecting to Telegram...
-                    </p>
-
-                    <div class="terminal-box">
-
-                        <div
-                            class="line"
-                            style="animation-delay:0s"
-                        >
-                            &gt; Authenticating secure session...
-                        </div>
-
-                        <div
-                            class="line"
-                            style="animation-delay:0.3s"
-                        >
-                            &gt; Establishing secure connection...
-                        </div>
-
-                        <div
-                            class="line"
-                            style="animation-delay:0.6s"
-                        >
-                            &gt; Redirecting to Telegram...
-                        </div>
-
-                    </div>
-
-                    <div class="status-indicator">
-
-                        <span class="spinner"></span>
-
-                        <span>
-                            Redirecting...
-                            <span id="countdown">
-                                ${CONFIG.COUNTDOWN_SECONDS}
-                            </span>
-                        </span>
-
-                    </div>
-
-                `;
-
-
-                fetch(
-                    `${apiBase}/api/mark_direct_access?token=${encodeURIComponent(hexToken)}`
-                )
-                .catch(() => {});
-
-
-                let counter =
-                    CONFIG.COUNTDOWN_SECONDS;
-
-
-                const el =
-                    document.getElementById(
-                        "countdown"
-                    );
-
-
-                const iv =
-                    setInterval(
-                        () => {
-
-                            counter--;
-
-                            if (el) {
-
-                                el.textContent =
-                                    counter;
-                            }
-
-
-                            if (
-                                counter <= 0
-                            ) {
-
-                                clearInterval(iv);
-
-                                window.location.href =
-                                    botLink;
-                            }
-
-                        },
-                        1000
-                    );
-            }
-
-
-            /* =========================
-               ERROR
-            ========================= */
-
-            function showError(reason) {
-
-                card.classList.remove(
-                    "bypass-theme"
-                );
-
-
-                dynamicDiv.innerHTML = `
-
-                    <h1>
-                        SECURITY<br>
-                        GATEWAY
-                    </h1>
-
-                    <div class="error-message">
-
-                        <h3>
-                            Link Error
-                        </h3>
-
-                        <p>
-                            ${escapeHtml(reason)}
-                        </p>
-
-                        <p
-                            style="
-                                font-size:14px;
-                                opacity:0.7;
-                                margin-top:12px;
-                            "
-                        >
-                            Please get a new link
-                            from the bot.
-                        </p>
-
-                    </div>
-
-                `;
-            }
-
-
-            /* =========================
-               BYPASS
-            ========================= */
-
-            function showBypass(
-                reason,
-                botLink
-            ) {
-
-                card.classList.add(
-                    "bypass-theme"
-                );
-
-
-                dynamicDiv.innerHTML = `
-
-                    <h1>
-                        🤡 BYPASS<br>
-                        DETECTED
-                    </h1>
-
-                    <p class="subtitle">
-                        We've detected an invalid or
-                        automated link bypass attempt.
-                    </p>
-
-                    <div class="terminal-box">
-
-                        <div
-                            class="line"
-                            style="
-                                opacity:1;
-                                animation:none;
-                                color:#ffffff;
-                                font-family:Arial, sans-serif;
-                                font-size:22px;
-                                font-weight:700;
-                                margin-bottom:12px;
-                            "
-                        >
-                            🔐 Security Violation
-                        </div>
-
-                        <div
-                            class="line"
-                            style="
-                                opacity:1;
-                                animation:none;
-                            "
-                        >
-                            &gt;
-                            ${escapeHtml(
-                                reason ||
-                                "Session expired or direct bypass tool detected."
-                            )}
-                        </div>
-
-                        <div
-                            class="line"
-                            style="
-                                opacity:1;
-                                animation:none;
-                                margin-top:12px;
-                            "
-                        >
-                            &gt;
-                            External bypass bots are strictly blocked.
-                        </div>
-
-                        <div
-                            class="line"
-                            style="
-                                opacity:1;
-                                animation:none;
-                                margin-top:8px;
-                            "
-                        >
-                            &gt;
-                            Please solve the link manually
-                            in a genuine browser.
-                        </div>
-
-                    </div>
-
-                    <button
-                        class="btn-primary"
-                        id="tgBtn"
-                    >
-                        Click here [TG]
-                    </button>
-
-                `;
-
-
-                document
-                    .getElementById("tgBtn")
-                    .onclick = function () {
-
-                        window.location.href =
-                            botLink ||
-                            "https://t.me/eonxstBot";
-
-                    };
-            }
-
-
-            /* =========================
-               INVALID
-            ========================= */
-
-            function showInvalid() {
-
-                card.classList.remove(
-                    "bypass-theme"
-                );
-
-
-                dynamicDiv.innerHTML = `
-
-                    <h1>
-                        SECURITY<br>
-                        GATEWAY
-                    </h1>
-
-                    <div class="error-message">
-
-                        <h3>
-                            Invalid or missing link
-                        </h3>
-
-                        <p>
-                            The URL does not contain
-                            a recognised file reference.
-                        </p>
-
-                    </div>
-
-                `;
-            }
-
-
-            /* =========================
-               GRANTED / /s ROUTE
-            ========================= */
-
-            function routeGranted(
-                h,
-                a,
-                b
-            ) {
-
-                card.classList.remove(
-                    "bypass-theme"
-                );
-
-
-                dynamicDiv.innerHTML = `
-
-                    <h1>
-                        ACCESS<br>
-                        GRANTED
-                    </h1>
-
-                    <p class="subtitle">
-                        Redirecting to Telegram...
-                    </p>
-
-                    <div class="status-indicator">
-
-                        <span class="spinner"></span>
-
-                        <span>
-                            Finalizing...
-                        </span>
-
-                    </div>
-
-                `;
-
-
-                setTimeout(
-                    () => {
-
-                        window.location.href =
-                            `https://t.me/${encodeURIComponent(b)}?start=${encodeURIComponent(h)}_${encodeURIComponent(a)}`;
-
-                    },
-                    1500
-                );
-            }
-
-
-            /* =========================
-               HTML ESCAPE
-            ========================= */
-
-            function escapeHtml(value) {
-
-                return String(value)
-                    .replace(
-                        /&/g,
-                        "&amp;"
-                    )
-                    .replace(
-                        /</g,
-                        "&lt;"
-                    )
-                    .replace(
-                        />/g,
-                        "&gt;"
-                    )
-                    .replace(
-                        /"/g,
-                        "&quot;"
-                    )
-                    .replace(
-                        /'/g,
-                        "&#039;"
-                    );
-            }
-
-        })();
-
-    </script>
-
+ <canvas id="particle-canvas"></canvas>
+ <div class="card" id="card">
+ <div class="logo-container">
+ <img
+ id="gateway-logo"
+ class="gateway-logo"
+ src="https://files.catbox.moe/1v0rqm.jpg"
+ alt="Gateway Logo"
+ >
+ </div>
+ <div id="dynamic-content"></div>
+ <div id="debug-console"></div>
+ </div>
+ <script>
+ (function () {
+ const canvas =
+ document.getElementById("particle-canvas");
+ if (!canvas) return;
+ const ctx =
+ canvas.getContext("2d");
+ function resize() {
+ canvas.width =
+ window.innerWidth;
+ canvas.height =
+ window.innerHeight;
+ }
+ resize();
+ window.addEventListener(
+ "resize",
+ resize
+ );
+ const particles = [];
+ for (let i = 0; i < 90; i++) {
+ particles.push({
+ x:
+ Math.random()
+ * canvas.width,
+ y:
+ Math.random()
+ * canvas.height,
+ radius:
+ Math.random() * 2 + 0.5,
+ speedX:
+ (Math.random() - 0.5)
+ * 0.35,
+ speedY:
+ (Math.random() - 0.5)
+ * 0.35,
+ alpha:
+ Math.random()
+ * 0.65 + 0.2
+ });
+ }
+ function animate() {
+ ctx.clearRect(
+ 0,
+ 0,
+ canvas.width,
+ canvas.height
+ );
+ particles.forEach(p => {
+ p.x += p.speedX;
+ p.y += p.speedY;
+ if (p.x < 0)
+ p.x = canvas.width;
+ if (p.x > canvas.width)
+ p.x = 0;
+ if (p.y < 0)
+ p.y = canvas.height;
+ if (p.y > canvas.height)
+ p.y = 0;
+ ctx.beginPath();
+ ctx.arc(
+ p.x,
+ p.y,
+ p.radius,
+ 0,
+ Math.PI * 2
+ );
+ ctx.fillStyle =
+ `rgba(220,240,255,${p.alpha})`;
+ ctx.shadowBlur = 8;
+ ctx.shadowColor =
+ "#ffffff";
+ ctx.fill();
+ });
+ requestAnimationFrame(animate);
+ }
+ animate();
+ })();
+ </script>
+ <script>
+ (function () {
+ "use strict";
+ const CONFIG = {
+ API_BASE:
+ "https://wee-dot-yedhuku2004-543d97f6.koyeb.app",
+ COUNTDOWN_SECONDS: 3
+ };
+ const DEBUG =
+ window.location.hash === "#debug";
+ function log(...args) {
+ if (!DEBUG)
+ return;
+ console.log(
+ "[GW]",
+ ...args
+ );
+ const d =
+ document.getElementById(
+ "debug-console"
+ );
+ if (d) {
+ d.style.display =
+ "block";
+ d.innerHTML +=
+ "<div>" +
+ args
+ .map(String)
+ .join(" ") +
+ "</div>";
+ }
+ }
+ const dynamicDiv =
+ document.getElementById(
+ "dynamic-content"
+ );
+ const card =
+ document.getElementById(
+ "card"
+ );
+ /* =========================
+ BASE64 URL DECODE
+ ========================= */
+ function base64UrlDecode(s) {
+ s =
+ s.replace(
+ /-/g,
+ "+"
+ )
+ .replace(
+ /_/g,
+ "/"
+ );
+ while (
+ s.length % 4
+ ) {
+ s += "=";
+ }
+ return atob(s);
+ }
+ /* =========================
+ ROUTING
+ ========================= */
+ const path =
+ window.location.pathname;
+ const urlParams =
+ new URLSearchParams(
+ window.location.search
+ );
+ /*
+ * /access/{token}?url=...
+ */
+ if (
+ path.startsWith(
+ "/access/"
+ )
+ ) {
+ const hexToken =
+ path.split("/")[2]
+ || "";
+ const encodedUrl =
+ urlParams.get("url");
+ if (!hexToken) {
+ showInvalid();
+ return;
+ }
+ let shortenerUrl;
+ try {
+ shortenerUrl =
+ base64UrlDecode(
+ encodedUrl
+ );
+ } catch (e) {
+ showInvalid();
+ return;
+ }
+ if (
+ !shortenerUrl
+ .startsWith("http")
+ ) {
+ showInvalid();
+ return;
+ }
+ routeAccess(
+ hexToken,
+ shortenerUrl
+ );
+ return;
+ }
+ /*
+ * /s?h=...&a=...&b=...
+ */
+ if (
+ path === "/s" ||
+ path.startsWith("/s/")
+ ) {
+ const h =
+ urlParams.get("h");
+ const a =
+ urlParams.get("a");
+ const b =
+ urlParams.get("b")
+ || "eonxstBot";
+ if (!h || !a) {
+ showInvalid();
+ return;
+ }
+ routeGranted(
+ h,
+ a,
+ b
+ );
+ return;
+ }
+ /*
+ * Legacy /
+ */
+ routeLegacy();
+ return;
+ /* =========================
+ LEGACY
+ ========================= */
+ function routeLegacy() {
+ dynamicDiv.innerHTML = `
+ <h1>
+ SECURITY<br>
+ GATEWAY
+ </h1>
+ <p class="subtitle">
+ Verification required to establish a secure tunnel.
+ Automated scripts are restricted.
+ </p>
+ <div class="error-message">
+ <h3>
+ Invalid or missing link
+ </h3>
+ <p>
+ The URL does not contain
+ a recognised file reference.
+ </p>
+ </div>
+ `;
+ }
+ /* =========================
+ ACCESS ROUTE
+ ========================= */
+ function routeAccess(
+ hexToken,
+ shortenerUrl
+ ) {
+ const apiBase =
+ CONFIG.API_BASE
+ .replace(/\/+$/, "");
+ fetch(
+ `${apiBase}/api/verify_token?token=${encodeURIComponent(hexToken)}`
+ )
+ .then(r => r.json())
+ .then(d => {
+ log(
+ "verify_token:",
+ d
+ );
+ if (
+ d.status === "OK"
+ ) {
+ if (
+ d.verification_enabled
+ === false
+ ) {
+ showDirectRedirect(
+ d.bot_link
+ || shortenerUrl,
+ hexToken,
+ apiBase
+ );
+ } else {
+ showGateway(
+ hexToken,
+ apiBase,
+ shortenerUrl,
+ d
+ );
+ }
+ }
+ else if (
+ d.status === "INVALID" ||
+ d.status === "EXPIRED" ||
+ d.status === "REUSED"
+ ) {
+ showError(
+ d.reason
+ ||
+ "Invalid or expired link"
+ );
+ }
+ else if (
+ d.status === "BYPASS"
+ ) {
+ showBypass(
+ d.reason,
+ d.bot_link
+ || shortenerUrl
+ );
+ }
+ else {
+ showError(
+ "Unknown response from server"
+ );
+ }
+ })
+ .catch(err => {
+ log(
+ "API error:",
+ err
+ );
+ /*
+ * Keep the existing behaviour:
+ * if the API cannot be reached,
+ * show the verification gateway.
+ */
+ showGateway(
+ hexToken,
+ apiBase,
+ shortenerUrl,
+ {}
+ );
+ });
+ }
+ /* =========================
+ SECURITY GATEWAY
+ ========================= */
+ function showGateway(
+ hexToken,
+ apiBase,
+ shortenerUrl,
+ info
+ ) {
+ card.classList.remove(
+ "bypass-theme"
+ );
+ dynamicDiv.innerHTML = `
+ <h1>
+ SECURITY<br>
+ GATEWAY
+ </h1>
+ <p class="subtitle">
+ Verification required to establish a
+ secure tunnel. Automated scripts are restricted.
+ </p>
+ <button
+ class="btn-primary"
+ id="verifyBtn"
+ >
+ VERIFY IDENTITY
+ </button>
+ `;
+ document
+ .getElementById("verifyBtn")
+ .onclick = function () {
+ startVerification(
+ hexToken,
+ apiBase,
+ shortenerUrl,
+ info
+ );
+ };
+ }
+ /* =========================
+ VERIFICATION
+ ========================= */
+ function startVerification(
+ hexToken,
+ apiBase,
+ shortenerUrl,
+ info
+ ) {
+ fetch(
+ `${apiBase}/api/mark_gateway_opened?token=${encodeURIComponent(hexToken)}`
+ )
+ .catch(() => {});
+ dynamicDiv.innerHTML = `
+ <h1>
+ SECURITY<br>
+ GATEWAY
+ </h1>
+ <p class="subtitle">
+ Verification required to establish a
+ secure tunnel. Automated scripts are restricted.
+ </p>
+ <button
+ class="btn-primary"
+ disabled
+ >
+ VERIFYING...
+ <span id="countdown">
+ ${CONFIG.COUNTDOWN_SECONDS}
+ </span>
+ </button>
+ `;
+ let counter =
+ CONFIG.COUNTDOWN_SECONDS;
+ const el =
+ document.getElementById(
+ "countdown"
+ );
+ const iv =
+ setInterval(
+ () => {
+ counter--;
+ if (el) {
+ el.textContent =
+ counter;
+ }
+ if (
+ counter <= 0
+ ) {
+ clearInterval(iv);
+ showRouting(
+ hexToken,
+ apiBase,
+ shortenerUrl,
+ info
+ );
+ }
+ },
+ 1000
+ );
+ }
+ /* =========================
+ ROUTING SCREEN
+ ========================= */
+ function showRouting(
+ hexToken,
+ apiBase,
+ shortenerUrl,
+ info
+ ) {
+ dynamicDiv.innerHTML = `
+ <h1>
+ SECURITY<br>
+ GATEWAY
+ </h1>
+ <p class="subtitle">
+ Verification completed successfully.
+ </p>
+ <button
+ class="btn-primary"
+ disabled
+ >
+ ROUTING SECURELY...
+ </button>
+ `;
+ setTimeout(
+ () => {
+ showProceed(
+ hexToken,
+ apiBase,
+ shortenerUrl,
+ info
+ );
+ },
+ 1000
+ );
+ }
+ /* =========================
+ PROCEED
+ ========================= */
+ function showProceed(
+ hexToken,
+ apiBase,
+ shortenerUrl,
+ info
+ ) {
+ const target =
+ info &&
+ info.shortener_url
+ ? info.shortener_url
+ : shortenerUrl;
+ dynamicDiv.innerHTML = `
+ <h1>
+ SECURITY<br>
+ GATEWAY
+ </h1>
+ <p class="subtitle">
+ Verification completed.
+ Continue to access the requested content.
+ </p>
+ <button
+ class="btn-primary"
+ id="proceedBtn"
+ >
+ PROCEED
+ </button>
+ `;
+ document
+ .getElementById("proceedBtn")
+ .onclick = function () {
+ fetch(
+ `${apiBase}/api/mark_shortener_redirect?token=${encodeURIComponent(hexToken)}`
+ )
+ .catch(() => {});
+ window.location.href =
+ target;
+ };
+ }
+ /* =========================
+ DIRECT REDIRECT
+ ========================= */
+ function showDirectRedirect(
+ botLink,
+ hexToken,
+ apiBase
+ ) {
+ card.classList.remove(
+ "bypass-theme"
+ );
+ dynamicDiv.innerHTML = `
+ <h1>
+ ACCESS<br>
+ GRANTED
+ </h1>
+ <p class="subtitle">
+ Verification is not required.
+ Redirecting to Telegram...
+ </p>
+ <div class="terminal-box">
+ <div
+ class="line"
+ style="animation-delay:0s"
+ >
+ &gt; Authenticating secure session...
+ </div>
+ <div
+ class="line"
+ style="animation-delay:0.3s"
+ >
+ &gt; Establishing secure connection...
+ </div>
+ <div
+ class="line"
+ style="animation-delay:0.6s"
+ >
+ &gt; Redirecting to Telegram...
+ </div>
+ </div>
+ <div class="status-indicator">
+ <span class="spinner"></span>
+ <span>
+ Redirecting...
+ <span id="countdown">
+ ${CONFIG.COUNTDOWN_SECONDS}
+ </span>
+ </span>
+ </div>
+ `;
+ fetch(
+ `${apiBase}/api/mark_direct_access?token=${encodeURIComponent(hexToken)}`
+ )
+ .catch(() => {});
+ let counter =
+ CONFIG.COUNTDOWN_SECONDS;
+ const el =
+ document.getElementById(
+ "countdown"
+ );
+ const iv =
+ setInterval(
+ () => {
+ counter--;
+ if (el) {
+ el.textContent =
+ counter;
+ }
+ if (
+ counter <= 0
+ ) {
+ clearInterval(iv);
+ window.location.href =
+ botLink;
+ }
+ },
+ 1000
+ );
+ }
+ /* =========================
+ ERROR
+ ========================= */
+ function showError(reason) {
+ card.classList.remove(
+ "bypass-theme"
+ );
+ dynamicDiv.innerHTML = `
+ <h1>
+ SECURITY<br>
+ GATEWAY
+ </h1>
+ <div class="error-message">
+ <h3>
+ Link Error
+ </h3>
+ <p>
+ ${escapeHtml(reason)}
+ </p>
+ <p
+ style="
+ font-size:14px;
+ opacity:0.7;
+ margin-top:12px;
+ "
+ >
+ Please get a new link
+ from the bot.
+ </p>
+ </div>
+ `;
+ }
+ /* =========================
+ BYPASS
+ ========================= */
+ function showBypass(
+ reason,
+ botLink
+ ) {
+ card.classList.add(
+ "bypass-theme"
+ );
+ dynamicDiv.innerHTML = `
+ <h1>
+ 🤡 BYPASS<br>
+ DETECTED
+ </h1>
+ <p class="subtitle">
+ We've detected an invalid or
+ automated link bypass attempt.
+ </p>
+ <div class="terminal-box">
+ <div
+ class="line"
+ style="
+ opacity:1;
+ animation:none;
+ color:#ffffff;
+ font-family:Arial, sans-serif;
+ font-size:22px;
+ font-weight:700;
+ margin-bottom:12px;
+ "
+ >
+ 🔐 Security Violation
+ </div>
+ <div
+ class="line"
+ style="
+ opacity:1;
+ animation:none;
+ "
+ >
+ &gt;
+ ${escapeHtml(
+ reason ||
+ "Session expired or direct bypass tool detected."
+ )}
+ </div>
+ <div
+ class="line"
+ style="
+ opacity:1;
+ animation:none;
+ margin-top:12px;
+ "
+ >
+ &gt;
+ External bypass bots are strictly blocked.
+ </div>
+ <div
+ class="line"
+ style="
+ opacity:1;
+ animation:none;
+ margin-top:8px;
+ "
+ >
+ &gt;
+ Please solve the link manually
+ in a genuine browser.
+ </div>
+ </div>
+ <button
+ class="btn-primary"
+ id="tgBtn"
+ >
+ Click here [TG]
+ </button>
+ `;
+ document
+ .getElementById("tgBtn")
+ .onclick = function () {
+ window.location.href =
+ botLink ||
+ "https://t.me/eonxstBot";
+ };
+ }
+ /* =========================
+ INVALID
+ ========================= */
+ function showInvalid() {
+ card.classList.remove(
+ "bypass-theme"
+ );
+ dynamicDiv.innerHTML = `
+ <h1>
+ SECURITY<br>
+ GATEWAY
+ </h1>
+ <div class="error-message">
+ <h3>
+ Invalid or missing link
+ </h3>
+ <p>
+ The URL does not contain
+ a recognised file reference.
+ </p>
+ </div>
+ `;
+ }
+ /* =========================
+ GRANTED / /s ROUTE
+ ========================= */
+ function routeGranted(
+ h,
+ a,
+ b
+ ) {
+ card.classList.remove(
+ "bypass-theme"
+ );
+ dynamicDiv.innerHTML = `
+ <h1>
+ ACCESS<br>
+ GRANTED
+ </h1>
+ <p class="subtitle">
+ Redirecting to Telegram...
+ </p>
+ <div class="status-indicator">
+ <span class="spinner"></span>
+ <span>
+ Finalizing...
+ </span>
+ </div>
+ `;
+ setTimeout(
+ () => {
+ window.location.href =
+ `https://t.me/${encodeURIComponent(b)}?start=${encodeURIComponent(h)}_${encodeURIComponent(a)}`;
+ },
+ 1500
+ );
+ }
+ /* =========================
+ HTML ESCAPE
+ ========================= */
+ function escapeHtml(value) {
+ return String(value)
+ .replace(
+ /&/g,
+ "&amp;"
+ )
+ .replace(
+ /</g,
+ "&lt;"
+ )
+ .replace(
+ />/g,
+ "&gt;"
+ )
+ .replace(
+ /"/g,
+ "&quot;"
+ )
+ .replace(
+ /'/g,
+ "&#039;"
+ );
+ }
+ })();
+ </script>
 </body>
 </html>
