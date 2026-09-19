@@ -63,7 +63,7 @@
  width: 100%;
  max-width: 620px;
  min-height: 720px;
- border: 1px solid rgba(255, 45, 60, 0.38);
+ border: 2px solid rgba(255, 45, 60, 0.75);
  border-radius: 42px;
  background:
  radial-gradient(
@@ -176,6 +176,13 @@
  text-shadow:
  0 2px 10px rgba(0,0,0,0.7);
  }
+ .gateway-title {
+ color: #ff2638;
+ text-shadow:
+  0 0 15px rgba(255, 38, 56, 0.8),
+  0 0 35px rgba(255, 38, 56, 0.4);
+ }
+
  /* =========================
  BUTTON
  ========================= */
@@ -215,6 +222,13 @@
  opacity: 0.6;
  cursor: not-allowed;
  }
+ .access-title {
+ color: #4da3ff !important;
+ text-shadow:
+  0 0 15px rgba(0, 110, 255, 0.8),
+  0 0 35px rgba(0, 110, 255, 0.4);
+ }
+
  /* =========================
  STATUS
  ========================= */
@@ -694,7 +708,7 @@
  ========================= */
  function routeLegacy() {
  dynamicDiv.innerHTML = `
- <h1>
+ <h1 class="gateway-title">
  SECURITY<br>
  GATEWAY
  </h1>
@@ -811,7 +825,7 @@
  "bypass-theme"
  );
  dynamicDiv.innerHTML = `
- <h1>
+ <h1 class="gateway-title">
  SECURITY<br>
  GATEWAY
  </h1>
@@ -851,7 +865,7 @@
  )
  .catch(() => {});
  dynamicDiv.innerHTML = `
- <h1>
+ <h1 class="gateway-title">
  SECURITY<br>
  GATEWAY
  </h1>
@@ -908,7 +922,7 @@
  info
  ) {
  dynamicDiv.innerHTML = `
- <h1>
+ <h1 class="gateway-title">
  SECURITY<br>
  GATEWAY
  </h1>
@@ -949,7 +963,7 @@
  ? info.shortener_url
  : shortenerUrl;
  dynamicDiv.innerHTML = `
- <h1>
+ <h1 class="gateway-title">
  SECURITY<br>
  GATEWAY
  </h1>
@@ -987,7 +1001,7 @@
  "bypass-theme"
  );
  dynamicDiv.innerHTML = `
- <h1>
+ <h1 class="access-title">
  ACCESS<br>
  GRANTED
  </h1>
@@ -1062,7 +1076,7 @@
  "bypass-theme"
  );
  dynamicDiv.innerHTML = `
- <h1>
+ <h1 class="gateway-title">
  SECURITY<br>
  GATEWAY
  </h1>
@@ -1180,7 +1194,7 @@
  "bypass-theme"
  );
  dynamicDiv.innerHTML = `
- <h1>
+ <h1 class="gateway-title">
  SECURITY<br>
  GATEWAY
  </h1>
@@ -1207,7 +1221,7 @@
  "bypass-theme"
  );
  dynamicDiv.innerHTML = `
- <h1>
+ <h1 class="access-title">
  ACCESS<br>
  GRANTED
  </h1>
